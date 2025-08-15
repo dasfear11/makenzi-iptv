@@ -3,6 +3,10 @@ plugins {
   id("org.jetbrains.kotlin.android")
   id("org.jetbrains.kotlin.plugin.serialization")
 }
+repositories {
+    google()
+    mavenCentral()
+}
 
 android {
   namespace = "one.makenzi.iptv"
