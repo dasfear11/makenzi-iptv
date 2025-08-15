@@ -56,11 +56,3 @@ android {
 }
 
 dependencies {
-    val media3 = "1.4.1" // можно 1.4.0, если 1.4.1 вдруг недоступна в момент билда
-
-    implementation("androidx.media3:media3-exoplayer:$media3")
-    implementation("androidx.media3:media3-ui:$media3")
-    // БЫЛО: implementation("androidx.media3:media3-exoplayer-rtmp:$media3")
-    implementation("androidx.media3:media3-datasource-rtmp:$media3") // <-- ПРАВИЛЬНО
-    ...
-}
