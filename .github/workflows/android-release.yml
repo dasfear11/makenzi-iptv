@@ -27,20 +27,20 @@ jobs:
             "platforms;android-35" \
             "build-tools;35.0.0"
 
-      # Подкладываем keystore из секретов
+      # Keystore из секрета
       - name: Prepare keystore
         run: |
           mkdir -p app/keystore
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore/makenzi-keystore.jks
 
-      # Гарантируем наличие темы и цветов (если забыли закоммитить)
+      # Гарантируем наличие styles/colors и корректной темы
       - name: Ensure resource files (styles/colors)
         run: |
           mkdir -p app/src/main/res/values
           cat > app/src/main/res/values/styles.xml << 'EOF'
           <resources>
-              <!-- Тёмная минималистичная тема для Android TV -->
-              <style name="Theme.MAKENZI.Dark" parent="Theme.Material3.Dark.NoActionBar">
+              <!-- Безопасная тема для View-based UI -->
+              <style name="Theme.MAKENZI.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
                   <item name="android:windowBackground">@color/black</item>
                   <item name="android:navigationBarColor">@color/black</item>
                   <item name="android:statusBarColor">@color/black</item>
@@ -54,7 +54,26 @@ jobs:
           </resources>
           EOF
 
-      # Gradle с read-only кэшем, чтобы не падать на сохранении кэша
+      # Убедимся, что AndroidManifest.xml ссылается на нужную тему и не содержит package=
+      - name: Normalize AndroidManifest.xml
+        run: |
+          MANIFEST=app/src/main/AndroidManifest.xml
+          if [ -f "$MANIFEST" ]; then
+            # удалить package="..." из <manifest ...>
+            sed -i -E 's/\s*package="[^"]*"\s*//' "$MANIFEST"
+            # гарантировать тему у <application ...>
+            if grep -q '<application' "$MANIFEST"; then
+              if grep -q 'android:theme=' "$MANIFEST"; then
+                sed -i -E 's/android:theme="[^"]*"/android:theme="@style\/Theme.MAKENZI.Dark"/' "$MANIFEST"
+              else
+                sed -i -E 's/<application /<application android:theme="@style\/Theme.MAKENZI.Dark" /' "$MANIFEST"
+              fi
+            fi
+          fi
+          echo "----- AndroidManifest.xml -----"
+          cat "$MANIFEST"
+
+      # Gradle: read-only cache, чтобы не падать на сохранении
       - name: Set up Gradle (read-only cache)
         uses: gradle/actions/setup-gradle@v3
         with:
