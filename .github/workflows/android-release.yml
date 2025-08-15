@@ -27,6 +27,12 @@ jobs:
             "platforms;android-35" \
             "build-tools;35.0.0"
 
+      # ⬇️ Раскладываем keystore из секрета в нужную папку
+      - name: Prepare keystore
+        run: |
+          mkdir -p app/keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/keystore/makenzi-keystore.jks
+
       - name: Generate Gradle Wrapper (8.7)
         uses: gradle/gradle-build-action@v3
         with:
