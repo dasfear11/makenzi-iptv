@@ -104,30 +104,44 @@ class PlayerActivity : AppCompatActivity() {
       findViewById<android.widget.ProgressBar>(R.id.nowProgress).progress = progress
     }.onFailure { }
   }
-  private fun showTracksDialog() {
-    val tracks = player.currentTracks ?: return
-    val items = mutableListOf<String>(); val selectors = mutableListOf<Pair<Int, Int>>()
-    for (gIndex in 0 until tracks.groups.size) {
-      val g = tracks.groups[gIndex]
-      val type = g.type
-      for (tIndex in 0 until g.length) {
-        val f = g.getTrackFormat(tIndex)
-        val label = when (type) {
-          C.TRACK_TYPE_AUDIO -> "Аудио: " + (f.language ?: "unknown") + " " + (if (f.bitrate != com.google.android.exoplayer2.Format.NO_VALUE) f.bitrate.toString() else "")
-          C.TRACK_TYPE_TEXT -> "Субтитры: " + (f.language ?: "unknown")
-          else -> continue
-        }
-        items += label; selectors += gIndex to tIndex
+private fun showTracksDialog() {
+  val tracks = player.currentTracks ?: return
+  val ctx = this
+  val items = mutableListOf<String>()
+  val selectors = mutableListOf<Pair<Int, Int>>() // groupIndex, trackIndex
+
+  for (gIndex in 0 until tracks.groups.size) {
+    val g = tracks.groups[gIndex]
+    val type = g.type
+    for (tIndex in 0 until g.length) {
+      val f = g.getTrackFormat(tIndex)
+      val label = when (type) {
+        androidx.media3.common.C.TRACK_TYPE_AUDIO -> "Аудио: " + (f.language ?: "unknown")
+        androidx.media3.common.C.TRACK_TYPE_TEXT -> "Субтитры: " + (f.language ?: "unknown")
+        else -> continue
       }
+      items += label
+      selectors += gIndex to tIndex
     }
-    if (items.isEmpty()) { android.widget.Toast.makeText(this,"Дорожки недоступны", android.widget.Toast.LENGTH_SHORT).show(); return }
-    android.app.AlertDialog.Builder(this).setTitle("Выбор дорожки").setItems(items.toTypedArray()) { _, which ->
+  }
+
+  if (items.isEmpty()) {
+    android.widget.Toast.makeText(ctx, "Дорожки недоступны", android.widget.Toast.LENGTH_SHORT).show()
+    return
+  }
+
+  android.app.AlertDialog.Builder(ctx)
+    .setTitle("Выбор дорожки")
+    .setItems(items.toTypedArray()) { _, which ->
       val (gIndex, tIndex) = selectors[which]
       val override = androidx.media3.common.TrackSelectionOverride(tracks.groups[gIndex].mediaTrackGroup, listOf(tIndex))
       val params = player.trackSelectionParameters.buildUpon().setOverrideForType(override).build()
       player.trackSelectionParameters = params
-    }.setNegativeButton("Отмена", null).show()
-  }
+    }
+    .setNegativeButton("Отмена", null)
+    .show()
+}
+
   override fun onStop() { super.onStop(); if (Build.VERSION.SDK_INT >= 24 && isInPictureInPictureMode) return; player.pause() }
   override fun onDestroy() { super.onDestroy(); player.release() }
 }
