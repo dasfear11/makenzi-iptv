@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
 
     steps:
       - name: Checkout
@@ -17,20 +19,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Устанавливаем Android SDK и принимаем лицензии
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platform-tools
-            platforms;android-34
-            build-tools;34.0.0
-
-      # Настраиваем Gradle без кеша (исключаем падение на cache service)
-      - name: Setup Gradle (no cache)
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-disabled: true
+      - name: Prepare Android SDK (licenses + packages)
+        run: |
+          yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses
+          ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
 
       - name: Make gradlew executable
         run: chmod +x gradlew
