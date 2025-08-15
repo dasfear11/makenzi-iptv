@@ -26,6 +26,7 @@ jobs:
           yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses
           "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
+      # Подстраховка на случай отсутствующих ресурсов/темы
       - name: Ensure minimal resources
         shell: bash
         run: |
@@ -66,6 +67,7 @@ EOF
         with:
           cache-read-only: true
 
+      # Сначала собираем debug APK (без keystore — гарантированно)
       - name: Build Debug APK
         shell: bash
         run: |
@@ -78,6 +80,7 @@ EOF
           name: MAKENZI-IPTV-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
+      # Затем опционально release, если есть секрет KEYSTORE_BASE64
       - name: Prepare keystore (optional)
         if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         shell: bash
