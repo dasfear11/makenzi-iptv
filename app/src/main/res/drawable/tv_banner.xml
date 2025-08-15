@@ -1,0 +1,6 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item><shape android:shape="rectangle"><size android:width="1280dp" android:height="720dp"/>
+    <gradient android:startColor="#0B0B0C" android:endColor="#121214" android:angle="90"/></shape></item>
+  <item android:width="1280dp" android:height="720dp"><shape android:shape="rectangle"><stroke android:width="2dp" android:color="#33D4AF37"/></shape></item>
+  <item android:gravity="center"><bitmap android:src="@drawable/ic_logo_fg" android:gravity="center"/></item>
+</layer-list>

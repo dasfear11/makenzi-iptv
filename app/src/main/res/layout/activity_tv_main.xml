@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical" android:padding="16dp"
+  android:background="@color/bg" android:layout_width="match_parent" android:layout_height="match_parent">
+
+  <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="horizontal" android:gravity="center_vertical" android:paddingBottom="8dp">
+    <TextView android:id="@+id/title" android:text="⟁ MAKENZI IPTV"
+      android:textColor="@color/text" android:textSize="22sp" android:textStyle="bold"
+      android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"/>
+    <Button android:id="@+id/btnImport" android:text="Добавить" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <Button android:id="@+id/btnEpg" android:text="EPG" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp"/>
+    <Button android:id="@+id/btnSettings" android:text="Настройки" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp"/>
+  </LinearLayout>
+
+  <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingBottom="8dp">
+    <Spinner android:id="@+id/groupSpinner" android:layout_width="160dp" android:layout_height="wrap_content" android:layout_marginEnd="8dp"/>
+    <EditText android:id="@+id/search" android:hint="Поиск каналов" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="@color/text" android:inputType="text"/>
+    <CheckBox android:id="@+id/favsOnly" android:text="★" android:textColor="@color/accent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp"/>
+    <Spinner android:id="@+id/sort" android:layout_width="150dp" android:layout_height="wrap_content" android:layout_marginStart="8dp"/>
+  </LinearLayout>
+
+  <com.google.android.material.chip.ChipGroup
+    android:id="@+id/groupChips"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:singleLine="true"
+    android:paddingBottom="8dp"/>
+
+  <androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/list"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:clipToPadding="false"
+    android:paddingBottom="16dp"
+    android:scrollbars="vertical"/>
+</LinearLayout>

@@ -1,0 +1,15 @@
+<resources>
+  <style name="Theme.MAKENZI.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <item name="android:colorBackground">#0B0B0C</item>
+    <item name="android:navigationBarColor">#0B0B0C</item>
+    <item name="android:statusBarColor">#0B0B0C</item>
+    <item name="colorPrimary">#0B0B0C</item>
+    <item name="colorSecondary">#D4AF37</item>
+    <item name="android:fontFamily">sans-serif</item>
+  </style>
+  <color name="bg">#0B0B0C</color>
+  <color name="panel">#121214</color>
+  <color name="muted">#7B7C80</color>
+  <color name="text">#E9E9EA</color>
+  <color name="accent">#D4AF37</color>
+</resources>
