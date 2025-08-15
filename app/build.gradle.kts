@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "one.makenzi.iptv"
-    compileSdk = 34
+    compileSdk = 35   // ← подняли на 35
 
     defaultConfig {
         applicationId = "one.makenzi.iptv"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 35   // ← подняли на 35 (можно оставить 34, но 35 ок)
         versionCode = 3
         versionName = "0.3.0"
         vectorDrawables.useSupportLibrary = true
@@ -42,23 +42,18 @@ android {
 
     buildFeatures {
         viewBinding = true
-        // dataBinding = false // (по умолчанию false; можно явно оставить закомментированным)
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    kotlinOptions { jvmTarget = "17" }
 
     packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
+        resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
     }
-} // ← ОБРАТИ ВНИМАНИЕ: это закрывающая скобка блока android
+}
 
 dependencies {
     val media3 = "1.4.1"
@@ -69,10 +64,10 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.leanback:leanback:1.2.0")
 
-    // Media3 / ExoPlayer
+    // Media3 / ExoPlayer + RTMP
     implementation("androidx.media3:media3-exoplayer:$media3")
     implementation("androidx.media3:media3-ui:$media3")
-    implementation("androidx.media3:media3-datasource-rtmp:$media3") // RTMP модуль
+    implementation("androidx.media3:media3-datasource-rtmp:$media3")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
