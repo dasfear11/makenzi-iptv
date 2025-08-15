@@ -19,7 +19,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Принять лицензии и поставить нужные SDK-компоненты
+      # Принимаем лицензии и ставим необходимые компоненты Android SDK
       - name: Install Android SDK packages
         run: |
           yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses
@@ -28,7 +28,7 @@ jobs:
             "platforms;android-34" \
             "build-tools;34.0.0"
 
-      # Поставить Gradle 8.7 и СГЕНЕРИРОВАТЬ WRAPPER в репозитории
+      # Генерируем Gradle Wrapper (на случай, если его нет в репозитории)
       - name: Generate Gradle Wrapper (8.7)
         uses: gradle/gradle-build-action@v3
         with:
@@ -38,9 +38,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-     - name: Build Release APK
-  run: ./gradlew --refresh-dependencies assembleRelease --no-daemon --stacktrace --warning-mode all
+      # Сборка релизного APK
+      - name: Build Release APK
+        run: ./gradlew --refresh-dependencies assembleRelease --no-daemon --stacktrace --warning-mode all
 
+      # Публикация артефакта со сборки
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
