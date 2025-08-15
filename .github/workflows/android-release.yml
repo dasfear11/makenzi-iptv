@@ -27,7 +27,6 @@ jobs:
             "platforms;android-35" \
             "build-tools;35.0.0"
 
-      # --- Keystore из секрета (жёсткая проверка) ---
       - name: Prepare keystore
         run: |
           if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
@@ -38,133 +37,145 @@ jobs:
           test -s app/keystore/makenzi-keystore.jks || { echo "::error::Keystore file is empty"; exit 1; }
           ls -lh app/keystore
 
-      # --- Гарантируем базовые ресурсы (создаём, только если их нет) ---
       - name: Ensure resources (styles/colors)
+        shell: bash
         run: |
           mkdir -p app/src/main/res/values
-          if [ ! -f app/src/main/res/values/styles.xml ]; then
-            cat > app/src/main/res/values/styles.xml << 'EOF'
-            <resources>
-                <!-- Безопасная тема для View-based UI -->
-                <style name="Theme.MAKENZI.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-                    <item name="android:windowBackground">@color/black</item>
-                    <item name="android:navigationBarColor">@color/black</item>
-                    <item name="android:statusBarColor">@color/black</item>
-                </style>
-            </resources>
-            EOF
-          fi
-          if [ ! -f app/src/main/res/values/colors.xml ]; then
-            cat > app/src/main/res/values/colors.xml << 'EOF'
-            <resources>
-                <color name="black">#000000</color>
-                <color name="white">#FFFFFF</color>
-            </resources>
-            EOF
-          fi
+          # styles.xml
+          cat > app/src/main/res/values/styles.xml << 'EOF'
+<resources>
+    <!-- Безопасная тема для View-based UI -->
+    <style name="Theme.MAKENZI.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:statusBarColor">@color/black</item>
+    </style>
+</resources>
+EOF
+          # colors.xml
+          cat > app/src/main/res/values/colors.xml << 'EOF'
+<resources>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+</resources>
+EOF
           ls -la app/src/main/res/values
 
-      # --- Если нет манифеста/лейаута/активити — создадим минимальные (не трогаем, если уже есть) ---
       - name: Ensure manifest, layout, activity (only if missing)
+        shell: bash
         run: |
-          mkdir -p app/src/main/{java/one/makenzi/iptv,res/layout}
+          mkdir -p app/src/main/java/one/makenzi/iptv
+          mkdir -p app/src/main/res/layout
+
           if [ ! -f app/src/main/AndroidManifest.xml ]; then
             cat > app/src/main/AndroidManifest.xml << 'EOF'
-            <?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-              <uses-feature android:name="android.software.leanback" android:required="true" />
-              <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
-              <uses-permission android:name="android.permission.INTERNET" />
-              <application
-                  android:label="MAKENZI IPTV"
-                  android:icon="@mipmap/ic_launcher"
-                  android:usesCleartextTraffic="true"
-                  android:theme="@style/Theme.MAKENZI.Dark">
-                <activity android:name=".PlayerActivity" android:exported="true">
-                  <intent-filter>
-                    <action android:name="android.intent.action.MAIN" />
-                    <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-                  </intent-filter>
-                </activity>
-              </application>
-            </manifest>
-            EOF
-          fi
-          if [ ! -f app/src/main/res/layout/activity_player.xml ]; then
-            cat > app/src/main/res/layout/activity_player.xml << 'EOF'
-            <?xml version="1.0" encoding="utf-8"?>
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:orientation="vertical"
-                android:background="#0B0B0C"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-              <TextView
-                  android:id="@+id/title"
-                  android:text="MAKENZI IPTV"
-                  android:textSize="20sp"
-                  android:textColor="#FFFFFF"
-                  android:padding="16dp"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content" />
-              <androidx.media3.ui.PlayerView
-                  android:id="@+id/playerView"
-                  android:layout_width="match_parent"
-                  android:layout_height="0dp"
-                  android:layout_weight="1"
-                  app:show_buffering="when_playing"
-                  app:controller_auto_show="true"
-                  app:controller_show_timeout_ms="3000" />
-            </LinearLayout>
-            EOF
-          fi
-          if [ ! -f app/src/main/java/one/makenzi/iptv/PlayerActivity.kt ]; then
-            cat > app/src/main/java/one/makenzi/iptv/PlayerActivity.kt << 'EOF'
-            package one.makenzi.iptv
-            import android.os.Bundle
-            import androidx.activity.ComponentActivity
-            import androidx.media3.common.MediaItem
-            import androidx.media3.datasource.DefaultDataSource
-            import androidx.media3.datasource.DefaultHttpDataSource
-            import androidx.media3.exoplayer.ExoPlayer
-            import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-            import androidx.media3.ui.PlayerView
-            class PlayerActivity : ComponentActivity() {
-              private var player: ExoPlayer? = null
-              private lateinit var playerView: PlayerView
-              override fun onCreate(savedInstanceState: Bundle?) {
-                super.onCreate(savedInstanceState)
-                setContentView(R.layout.activity_player)
-                playerView = findViewById(R.id.playerView)
-                val httpFactory = DefaultHttpDataSource.Factory()
-                  .setConnectTimeoutMs(15000)
-                  .setReadTimeoutMs(20000)
-                  .setAllowCrossProtocolRedirects(true)
-                  .setUserAgent("MAKENZI-IPTV/1.0")
-                val dataSourceFactory = DefaultDataSource.Factory(this, httpFactory)
-                val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
-                player = ExoPlayer.Builder(this)
-                  .setMediaSourceFactory(mediaSourceFactory)
-                  .build()
-                playerView.player = player
-                val url = intent.getStringExtra("video_url")
-                  ?: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-                val item = MediaItem.fromUri(url)
-                player?.setMediaItem(item)
-                player?.prepare()
-                player?.playWhenReady = true
-              }
-              override fun onStop() {
-                super.onStop()
-                player?.release()
-                player = null
-              }
-            }
-            EOF
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-feature android:name="android.software.leanback" android:required="true" />
+  <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <application
+      android:label="MAKENZI IPTV"
+      android:icon="@mipmap/ic_launcher"
+      android:usesCleartextTraffic="true"
+      android:theme="@style/Theme.MAKENZI.Dark">
+    <activity android:name=".PlayerActivity" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>
+EOF
           fi
 
-      # --- Нормализуем AndroidManifest.xml (уберём package= и зафиксируем тему) ---
+          if [ ! -f app/src/main/res/layout/activity_player.xml ]; then
+            cat > app/src/main/res/layout/activity_player.xml << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="#0B0B0C"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+  <TextView
+      android:id="@+id/title"
+      android:text="MAKENZI IPTV"
+      android:textSize="20sp"
+      android:textColor="#FFFFFF"
+      android:padding="16dp"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+  <androidx.media3.ui.PlayerView
+      android:id="@+id/playerView"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      app:show_buffering="when_playing"
+      app:controller_auto_show="true"
+      app:controller_show_timeout_ms="3000" />
+</LinearLayout>
+EOF
+          fi
+
+          if [ ! -f app/src/main/java/one/makenzi/iptv/PlayerActivity.kt ]; then
+            cat > app/src/main/java/one/makenzi/iptv/PlayerActivity.kt << 'EOF'
+package one.makenzi.iptv
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.media3.common.MediaItem
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.ui.PlayerView
+
+class PlayerActivity : ComponentActivity() {
+  private var player: ExoPlayer? = null
+  private lateinit var playerView: PlayerView
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_player)
+    playerView = findViewById(R.id.playerView)
+
+    val httpFactory = DefaultHttpDataSource.Factory()
+      .setConnectTimeoutMs(15000)
+      .setReadTimeoutMs(20000)
+      .setAllowCrossProtocolRedirects(true)
+      .setUserAgent("MAKENZI-IPTV/1.0")
+
+    val dataSourceFactory = DefaultDataSource.Factory(this, httpFactory)
+    val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
+
+    player = ExoPlayer.Builder(this)
+      .setMediaSourceFactory(mediaSourceFactory)
+      .build()
+
+    playerView.player = player
+
+    val url = intent.getStringExtra("video_url")
+      ?: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+
+    val item = MediaItem.fromUri(url)
+    player?.setMediaItem(item)
+    player?.prepare()
+    player?.playWhenReady = true
+  }
+
+  override fun onStop() {
+    super.onStop()
+    player?.release()
+    player = null
+  }
+}
+EOF
+          fi
+
       - name: Normalize AndroidManifest.xml
+        shell: bash
         run: |
           MANIFEST=app/src/main/AndroidManifest.xml
           sed -i -E 's/\s*package="[^"]*"\s*//' "$MANIFEST" || true
@@ -178,7 +189,6 @@ jobs:
           echo "----- AndroidManifest.xml -----"
           cat "$MANIFEST"
 
-      # --- Gradle read-only cache (не сохраняем кэш, чтобы не падать на сбоях GitHub Cache) ---
       - name: Set up Gradle (read-only cache)
         uses: gradle/actions/setup-gradle@v3
         with:
@@ -200,7 +210,6 @@ jobs:
           name: MAKENZI-IPTV-app-release
           path: app/build/outputs/apk/release/app-release.apk
 
-      # На случай падения прикрепим логи и отчёты
       - name: Upload build reports (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
