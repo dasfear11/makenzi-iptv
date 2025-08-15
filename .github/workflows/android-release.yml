@@ -2,12 +2,11 @@ name: Android Release APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main, master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,14 +17,26 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Cache Gradle
+      # Устанавливаем Android SDK и принимаем лицензии
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
+
+      # Настраиваем Gradle без кеша (исключаем падение на cache service)
+      - name: Setup Gradle (no cache)
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
