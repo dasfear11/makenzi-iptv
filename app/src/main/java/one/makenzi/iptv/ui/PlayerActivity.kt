@@ -45,10 +45,15 @@ class PlayerActivity : AppCompatActivity() {
     val chId = intent.getStringExtra("channelId")
     val all = store.state.playlists.flatMap { it.channels }
     current = all.find { it.id == chId } ?: all.firstOrNull()
-    val httpFactory = DefaultHttpDataSource.Factory()
-      .setConnectTimeoutMs(store.state.connectTimeoutMs).setReadTimeoutMs(store.state.readTimeoutMs)
-      .also { f -> store.state.userAgent?.let { f.setUserAgent(it) } }
-    val mediaSourceFactory = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(httpFactory)
+val httpFactory = DefaultHttpDataSource.Factory()
+  .setConnectTimeoutMs(store.state.connectTimeoutMs)
+  .setReadTimeoutMs(store.state.readTimeoutMs)
+  .also { f -> store.state.userAgent?.let { f.setUserAgent(it) } }
+
+// DataSource, который умеет и http/https, и rtmp (когда rtmp-расширение на classpath)
+val dataSourceFactory = androidx.media3.datasource.DefaultDataSource.Factory(this, httpFactory)
+
+val mediaSourceFactory = androidx.media3.exoplayer.source.DefaultMediaSourceFactory(dataSourceFactory)
     val renderersFactory: RenderersFactory = DefaultRenderersFactory(this)
     val loadControl = DefaultLoadControl.Builder()
       .setBufferDurationsMs(store.state.minBufferMs, store.state.maxBufferMs, store.state.playBufferMs, store.state.rebufferMs).build()
