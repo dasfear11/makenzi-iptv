@@ -19,15 +19,14 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Install Android SDK packages
+      - name: Install Android SDK packages (API 35)
         run: |
           yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --licenses
           ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
             "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
+            "platforms;android-35" \
+            "build-tools;35.0.0"
 
-      # Генерируем Gradle Wrapper (если отсутствует в репозитории)
       - name: Generate Gradle Wrapper (8.7)
         uses: gradle/gradle-build-action@v3
         with:
