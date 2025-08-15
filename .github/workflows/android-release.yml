@@ -27,7 +27,6 @@ jobs:
             "platforms;android-34" \
             "build-tools;34.0.0"
 
-      # Если в репо нет wrapper — сгенерируем его
       - name: Generate Gradle Wrapper (8.7)
         uses: gradle/gradle-build-action@v3
         with:
