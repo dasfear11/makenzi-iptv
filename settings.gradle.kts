@@ -1,17 +1,9 @@
 pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+    repositories { google(); mavenCentral(); gradlePluginPortal() }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        // Эти репозитории нужны, чтобы тянулся Media3 RTMP
-        google()
-        mavenCentral()
-    }
+    repositories { google(); mavenCentral() }  // единственный источник
 }
 rootProject.name = "MAKENZI-IPTV"
 include(":app")
