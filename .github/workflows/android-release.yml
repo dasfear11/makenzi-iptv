@@ -24,8 +24,7 @@ jobs:
         run: |
           set -euxo pipefail
           yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses
-          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" \
-            "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Ensure minimal resources
         shell: bash
@@ -71,12 +70,7 @@ EOF
         shell: bash
         run: |
           set -euxo pipefail
-          if [ -f gradlew ]; then
-            chmod +x gradlew
-            ./gradlew assembleDebug --no-daemon --stacktrace --warning-mode all
-          else
-            gradle assembleDebug --no-daemon --stacktrace --warning-mode all
-          fi
+          if [ -f gradlew ]; then chmod +x gradlew; ./gradlew assembleDebug --no-daemon --stacktrace --warning-mode all; else gradle assembleDebug --no-daemon --stacktrace --warning-mode all; fi
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -98,11 +92,7 @@ EOF
         shell: bash
         run: |
           set -euxo pipefail
-          if [ -f gradlew ]; then
-            ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all
-          else
-            gradle assembleRelease --no-daemon --stacktrace --warning-mode all
-          fi
+          if [ -f gradlew ]; then ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all; else gradle assembleRelease --no-daemon --stacktrace --warning-mode all; fi
 
       - name: Upload Release APK (optional)
         if: ${{ secrets.KEYSTORE_BASE64 != '' }}
@@ -110,14 +100,3 @@ EOF
         with:
           name: MAKENZI-IPTV-release
           path: app/build/outputs/apk/release/app-release.apk
-
-      - name: Upload build reports (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-reports
-          path: |
-            **/build/reports/**
-            **/build/outputs/**
-            **/build/logs/**
-          if-no-files-found: ignore
